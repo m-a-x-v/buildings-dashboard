@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useState } from 'react'
 import {
   Avatar,
   Badge,
@@ -12,22 +13,21 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import {
-  ApartmentOutlined,
-  BusinessOutlined,
-  ChevronRightRounded,
-  ExpandLessRounded,
-  ExpandMoreRounded,
-  LayersOutlined,
-  NotificationsNoneRounded,
-  RoomOutlined,
-  SettingsOutlined,
-} from '@mui/icons-material'
+import { ChevronRightRounded, NotificationsNoneRounded, SettingsOutlined } from '@mui/icons-material'
+import SidebarTree from './SidebarTree'
+import type { SidebarNode } from '../data/normalize'
 
 type SidebarProps = {
   drawerWidth: number
   mobileOpen: boolean
   onClose: () => void
+  sidebarTree?: SidebarNode | null
+  loading?: boolean
+}
+
+type SidebarContentProps = {
+  sidebarTree?: SidebarNode | null
+  loading?: boolean
 }
 
 const sectionTitleSx = {
@@ -41,113 +41,117 @@ const sectionTitleSx = {
   fontWeight: 700,
 }
 
-const SidebarContent = () => (
-  <Stack sx={{ height: '100%' }}>
-    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2, py: 2 }}>
-      <Stack direction="row" alignItems="center" spacing={1.2}>
-        <Avatar
-          sx={{
-            bgcolor: 'primary.main',
-            width: 32,
-            height: 32,
-            fontSize: '0.9rem',
-            fontWeight: 700,
-          }}
-        >
-          M
-        </Avatar>
-        <Typography variant="subtitle1" fontWeight={600}>
-          Enterprise
-        </Typography>
+const SidebarContent = ({ sidebarTree, loading = false }: SidebarContentProps) => {
+  const [expandedIds, setExpandedIds] = useState<Set<string> | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined)
+
+  const baseExpandedIds = useMemo(
+    () => (sidebarTree ? new Set([sidebarTree.id]) : new Set<string>()),
+    [sidebarTree],
+  )
+  const baseSelectedId = useMemo(() => {
+    if (!sidebarTree) {
+      return null
+    }
+    return sidebarTree.children[0]?.id ?? sidebarTree.id
+  }, [sidebarTree])
+
+  const effectiveExpandedIds = expandedIds ?? baseExpandedIds
+  const effectiveSelectedId = selectedId === undefined ? baseSelectedId : selectedId
+
+  const handleToggle = useCallback(
+    (id: string) => {
+      setExpandedIds((prev) => {
+        const current = prev ?? baseExpandedIds
+        const next = new Set(current)
+        if (next.has(id)) {
+          next.delete(id)
+        } else {
+          next.add(id)
+        }
+        return next
+      })
+    },
+    [baseExpandedIds],
+  )
+
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId(id)
+  }, [])
+
+  return (
+    <Stack sx={{ height: '100%' }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2, py: 2 }}>
+        <Stack direction="row" alignItems="center" spacing={1.2}>
+          <Avatar
+            sx={{
+              bgcolor: 'primary.main',
+              width: 32,
+              height: 32,
+              fontSize: '0.9rem',
+              fontWeight: 700,
+            }}
+          >
+            M
+          </Avatar>
+          <Typography variant="subtitle1" fontWeight={600}>
+            Enterprise
+          </Typography>
+        </Stack>
+        <IconButton size="small" aria-label="Notifications">
+          <Badge color="primary" variant="dot">
+            <NotificationsNoneRounded fontSize="small" />
+          </Badge>
+        </IconButton>
       </Stack>
-      <IconButton size="small" aria-label="Notifications">
-        <Badge color="primary" variant="dot">
-          <NotificationsNoneRounded fontSize="small" />
-        </Badge>
-      </IconButton>
+
+      <Divider />
+
+      <Typography sx={sectionTitleSx}>Navigation</Typography>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <SidebarTree
+        tree={sidebarTree ?? null}
+        loading={loading}
+        selectedId={effectiveSelectedId ?? null}
+        expandedIds={effectiveExpandedIds}
+        onSelect={handleSelect}
+        onToggle={handleToggle}
+      />
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
+
+      <List dense sx={{ px: 1 }}>
+        <ListItemButton sx={{ borderRadius: 2 }}>
+          <ListItemIcon>
+            <SettingsOutlined fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Integrations" />
+          <ChevronRightRounded fontSize="small" />
+        </ListItemButton>
+      </List>
+
+      <Box sx={{ mt: 'auto', px: 2, pb: 2 }}>
+        <Divider sx={{ mb: 2 }} />
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          <Avatar sx={{ bgcolor: 'grey.200', color: 'text.primary', width: 32, height: 32 }}>
+            YN
+          </Avatar>
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600}>
+              Your Name
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Administrator
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
     </Stack>
+  )
+}
 
-    <Divider />
-
-    <Typography sx={sectionTitleSx}>Navigation</Typography>
-    <List dense sx={{ px: 1 }}>
-      <ListItemButton selected sx={{ borderRadius: 2 }}>
-        <ListItemIcon>
-          <ApartmentOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Buildings" />
-        <ExpandLessRounded fontSize="small" />
-      </ListItemButton>
-
-      <ListItemButton sx={{ borderRadius: 2, pl: 4 }}>
-        <ListItemIcon>
-          <BusinessOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Office" />
-      </ListItemButton>
-
-      <ListItemButton selected sx={{ borderRadius: 2, pl: 4 }}>
-        <ListItemIcon>
-          <BusinessOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Sofia Tech Park" />
-        <ExpandMoreRounded fontSize="small" />
-      </ListItemButton>
-
-      <ListItemButton sx={{ borderRadius: 2, pl: 6 }}>
-        <ListItemIcon>
-          <LayersOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Floor 1" />
-      </ListItemButton>
-
-      <ListItemButton sx={{ borderRadius: 2, pl: 8 }}>
-        <ListItemIcon>
-          <RoomOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="M Climate" />
-      </ListItemButton>
-
-      <ListItemButton sx={{ borderRadius: 2, pl: 10 }}>
-        <ListItemIcon>
-          <RoomOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="PCB Room" />
-      </ListItemButton>
-    </List>
-
-    <Divider sx={{ my: 2 }} />
-
-    <List dense sx={{ px: 1 }}>
-      <ListItemButton sx={{ borderRadius: 2 }}>
-        <ListItemIcon>
-          <SettingsOutlined fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Integrations" />
-        <ChevronRightRounded fontSize="small" />
-      </ListItemButton>
-    </List>
-
-    <Box sx={{ mt: 'auto', px: 2, pb: 2 }}>
-      <Divider sx={{ mb: 2 }} />
-      <Stack direction="row" alignItems="center" spacing={1.5}>
-        <Avatar sx={{ bgcolor: 'grey.200', color: 'text.primary', width: 32, height: 32 }}>
-          YN
-        </Avatar>
-        <Box>
-          <Typography variant="subtitle2" fontWeight={600}>
-            Your Name
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Administrator
-          </Typography>
-        </Box>
-      </Stack>
-    </Box>
-  </Stack>
-)
-
-const Sidebar = ({ drawerWidth, mobileOpen, onClose }: SidebarProps) => {
+const Sidebar = ({ drawerWidth, mobileOpen, onClose, sidebarTree, loading = false }: SidebarProps) => {
   return (
     <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
       <Drawer
@@ -165,7 +169,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose }: SidebarProps) => {
           },
         }}
       >
-        <SidebarContent />
+        <SidebarContent sidebarTree={sidebarTree} loading={loading} />
       </Drawer>
       <Drawer
         variant="permanent"
@@ -180,7 +184,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, onClose }: SidebarProps) => {
           },
         }}
       >
-        <SidebarContent />
+        <SidebarContent sidebarTree={sidebarTree} loading={loading} />
       </Drawer>
     </Box>
   )

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Alert, Box, Paper, Stack, Typography } from '@mui/material'
+import { Alert, Box } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
+import BuildingsList from './components/BuildingsList'
 import BuildingsListPlaceholder from './components/BuildingsListPlaceholder'
 import PageHeader from './components/PageHeader'
 import Sidebar from './components/Sidebar'
@@ -11,8 +12,10 @@ import theme from './theme'
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const drawerWidth = 280
-  const { status, derived, error } = useBuildingsData()
+  const { status, derived, error, isRefreshing } = useBuildingsData()
   const totals = derived?.totals
+  const isLoading = status === 'loading' || status === 'idle'
+  const showSkeleton = isLoading && !derived
 
   return (
     <ThemeProvider theme={theme}>
@@ -22,6 +25,8 @@ function App() {
           drawerWidth={drawerWidth}
           mobileOpen={mobileOpen}
           onClose={() => setMobileOpen(false)}
+          sidebarTree={derived?.sidebarTree}
+          loading={showSkeleton}
         />
         <Box
           component="main"
@@ -38,21 +43,21 @@ function App() {
             deviceCount={totals?.devices ?? 0}
             onlineDevices={totals?.onlineDevices ?? 0}
           />
-          {status === 'loading' || status === 'idle' ? <BuildingsListPlaceholder /> : null}
+          {showSkeleton ? <BuildingsListPlaceholder /> : null}
+          {!showSkeleton && derived ? (
+            <BuildingsList
+              buildings={derived.buildings}
+              statsById={derived.buildingStatsById}
+              loadingMore={!derived.isComplete || isRefreshing}
+            />
+          ) : null}
           {status === 'error' ? (
             <Alert severity="error">{error ?? 'Failed to load buildings data.'}</Alert>
           ) : null}
-          {status === 'success' ? (
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Stack spacing={1}>
-                <Typography variant="h6" fontWeight={700}>
-                  Data ready
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Loaded {totals?.buildings ?? 0} buildings and {totals?.devices ?? 0} devices.
-                </Typography>
-              </Stack>
-            </Paper>
+          {isRefreshing && derived?.isComplete ? (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Refreshing data...
+            </Alert>
           ) : null}
         </Box>
       </Box>
