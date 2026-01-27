@@ -3,9 +3,17 @@ import { Box, Button, IconButton, Stack, Typography } from '@mui/material'
 
 type PageHeaderProps = {
   onMenuClick: () => void
+  buildingCount?: number
+  deviceCount?: number
+  onlineDevices?: number
 }
 
-const PageHeader = ({ onMenuClick }: PageHeaderProps) => {
+const PageHeader = ({
+  onMenuClick,
+  buildingCount = 0,
+  deviceCount = 0,
+  onlineDevices = 0,
+}: PageHeaderProps) => {
   return (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
@@ -24,10 +32,10 @@ const PageHeader = ({ onMenuClick }: PageHeaderProps) => {
         </IconButton>
         <Box>
           <Typography variant="h5" fontWeight={700}>
-            Buildings
+            Buildings ({buildingCount})
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            0 total | 0 online
+            {deviceCount} total | {onlineDevices} online
           </Typography>
         </Box>
       </Stack>
