@@ -1,73 +1,38 @@
-# React + TypeScript + Vite
+# Buildings Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lightweight buildings + devices dashboard with a virtualized sidebar and device tables.
 
-Currently, two official plugins are available:
+## Setup
+- Install: `npm install`
+- Dev: `npm run dev`
+- Build: `npm run build`
+- Lint: `npm run lint`
+- Format: `npm run format`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech stack (and where we use it)
+- React 19 + TypeScript - app structure, state and typed data flows.
+- Vite - dev server and build tooling.
+- MUI (material + icons) - layout, buttons, inputs and overall UI primitives.
+- MUI X Data Grid - device tables with selection, column layout and scrolling.
+- react-window + react-virtualized-auto-sizer - virtualized sidebar tree and buildings list for smooth scrolling.
 
-## React Compiler
+## Implemented features
+- Buildings list with stats, online counts and navigation into devices
+- Devices view with per-table search, selection and action bar
+- Virtualized sidebar tree and virtualized building list
+- Light/Dark theming with themed components
+- Skeleton loading states
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Performance & Optimization
+- Avoiding unnecessary re-renders: handlers and derived maps/lists are memoized (e.g., `buildSelectionMap`, device grouping and table configs) so unchanged inputs do not re-render large trees.
+- Efficient filtering/grouping: filters run only on the active scope (building/floor/space/room) and per device type instead of the full dataset each time.
+- Debounced search: per-table search uses a short timeout so filtering runs after typing pauses, not on every keystroke.
+- Avoid heavy work on every render: expensive calculations (column configs, filtered rows) are cached and reused via `useMemo`.
+- Render only what is visible: react-window + AutoSizer virtualize the sidebar and buildings list; DataGrid handles row virtualization in device tables.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Improvements
+- Create custom dashboards for buildings.
+- Add new devices.
+- Persist theme and table filters to local storage.
+- Add virtualization for very large device tables.
+- Add server-side pagination / filtering when API supports it.

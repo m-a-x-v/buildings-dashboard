@@ -1,0 +1,5 @@
+node_modules
+dist
+.idx
+build
+coverage
