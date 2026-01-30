@@ -30,14 +30,25 @@ Lightweight buildings + devices dashboard with a virtualized sidebar and device 
 - Avoid heavy work on every render: expensive calculations (column configs, filtered rows) are cached and reused via `useMemo`.
 - Render only what is visible: react-window + AutoSizer virtualize the sidebar and buildings list; DataGrid handles row virtualization in device tables.
 
+## Key decisions
+- Use MUI + Data Grid for consistent UI and table features.
+- Use virtualization for long lists to keep scrolling smooth.
+- Keep derived data memoized to avoid heavy re-computation.
+
+## Trade-offs
+- Client-side filtering is fast to build but can be heavy on very large datasets.
+- Virtualized lists limit some DOM-based styling and measurements.
+
 ## Improvements
 - Create custom dashboards for buildings.
 - Add new devices.
 - Persist theme and table filters to local storage.
 - Add virtualization for very large device tables.
 - Add server-side pagination / filtering when API supports it.
+- Add persisted filters/preferences per user.
+- Move filtering/paging to the backend for scale.
 
 ## Bonus
 - Production handling: store data in a reliable database, cache results and add monitoring.
-- Backend/API changes: add faster endpoints, paging, access control and clearer device status fields.
+- Backend/API changes: add faster endpoints (smaller payloads, server-side filtering) and clearer device status fields.
 - UI scaling: load data in small chunks, show summaries first and keep lists short until the user expands them.
