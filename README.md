@@ -36,3 +36,8 @@ Lightweight buildings + devices dashboard with a virtualized sidebar and device 
 - Persist theme and table filters to local storage.
 - Add virtualization for very large device tables.
 - Add server-side pagination / filtering when API supports it.
+
+## Bonus
+- Production handling: store data in a reliable database, cache results and add monitoring.
+- Backend/API changes: add faster endpoints, paging, access control and clearer device status fields.
+- UI scaling: load data in small chunks, show summaries first and keep lists short until the user expands them.
